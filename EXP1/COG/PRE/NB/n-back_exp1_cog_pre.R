@@ -1,0 +1,1430 @@
+setwd("C:/Users/User/Desktop/PNC_Lab/Data_Reduction/EXP1/COG/PRE/NB")
+folders <- Sys.glob("C:/Users/User/Desktop/PNC_Lab/Data_Reduction/EXP1/COG/PRE/NB/INPUT/*")
+# this reads in files for a participant (that is what data is, so put that in the beginning of the loop)
+
+fileNames <- Sys.glob("input*.csv")
+
+
+group = FALSE
+
+for(folder in folders){
+  
+  the_part_id <- substr(basename(folder), 1, 5)
+  inside<-Sys.glob(paste(folder, "/*/*", sep = ""))
+  data <- read.csv(file = inside[1], header = TRUE,skip = 1)
+  if(ncol(data)  > 73) {
+    data<- data[,-13]
+  }
+  #data <- read.csv(file = inside[1], header = TRUE,skip = 1)[,-13]
+  
+  inside <- inside[2:length(inside)]
+  count = 2
+  for(stuff in inside) {
+    temp <- read.csv(file = stuff, header = TRUE,skip = 1)
+    for(name in setdiff(colnames(temp), colnames(data))){
+      temp[name] <- NULL
+    }
+    if(ncol(temp)  > 73) {
+      data<- rbind(data,temp[,-13])
+    } else {
+      data<- rbind(data,temp)
+    }
+  }
+
+## Throw out only correct values with RTs < 200
+
+data <- data[(data$Stimulus.RT >= 100 & data$Stimulus.ACC == 1) | data$Stimulus.ACC == 0 | data$Stimulus.RT == 0,]
+
+correct_data <- data[data$Stimulus.ACC == 1, ]
+
+## add median
+## Throw out First Letters
+#target acc in dec not percent
+
+
+#data <- data[is.na(data$FirstLetters),]
+
+B1_data <- data[data$Condition == 1,]
+B2_data <- data[data$Condition == 2,]
+B3_data <- data[data$Condition == 3,]
+if(nrow(B3_data) == 0){
+  data_list <- list(B1_data, B2_data)
+} else {
+  data_list <- list(B1_data, B2_data, B3_data)
+}
+
+
+
+
+#pdf(paste(data$Subject[1], "Histograms.pdf", sep = ""))
+pdf(paste(paste("OUTPUT/", the_part_id, sep = ""), "Histograms.pdf", sep = ""))
+
+
+B1_data_corr <- correct_data[correct_data$Condition == 1,]
+B2_data_corr <- correct_data[correct_data$Condition == 2,]
+if(nrow(B3_data) != 0) {
+B3_data_corr <- correct_data[correct_data$Condition == 3,]
+}
+
+hist(correct_data$Stimulus.RT, xlab = "Correct RTs", ylim = c(0,200), main = paste(correct_data$Subject[1], "All", sep = ": "))
+hist(B1_data_corr$Stimulus.RT, xlab = "Correct RTs", ylim = c(0,200), main = paste(correct_data$Subject[1], "1-Back", sep = ": "))
+hist(B2_data_corr$Stimulus.RT, xlab = "Correct RTs", ylim = c(0,200), main = paste(correct_data$Subject[1], "2-Back", sep = ": "))
+if(nrow(B3_data) != 0) {
+  hist(B3_data_corr$Stimulus.RT, xlab = "Correct RTs", ylim = c(0,200), main = paste(correct_data$Subject[1], "3-Back", sep = ": "))
+}
+dev.off()
+
+
+#sink(paste(data$Subject[1], "Output.txt", sep = ""))
+sink(paste(paste("OUTPUT/", the_part_id, sep = ""), "Output.txt", sep = ""))
+
+backs <- c("1_B_", "2_B_", "3_B_")
+
+
+cat("PartID, ");cat("ExperimentName , ");cat("SessionID, ");#cat("BlockID, ");
+
+for(back in backs) {
+
+let <- "All"
+cat(back);cat("Overall_Acc_");cat(let);cat(", ");
+cat(back);cat("Overall_SDAcc_");cat(let);cat(", ")
+cat(back);cat("Overall_CVAcc_");cat(let);cat(", ");
+cat(back);cat("NonTarget_Acc_");cat(let);cat(", ");
+cat(back);cat("NonTarget_SDAcc_");cat(let);cat(", ");
+cat(back);cat("NonTarget_CVAcc_");cat(let);cat(", ");
+cat(back);cat("Target_Acc_");cat(let);cat(", ");
+cat(back);cat("Target_SDAcc_");cat(let);cat(", ");
+cat(back);cat("Target_CVAcc_");cat(let);cat(", ");
+cat(back);cat("_dprime_");cat(let);cat(", ");
+cat(back);cat("_IE_");cat(let);cat(", ");
+cat(back);cat("OverallOmissions_");cat(let);cat(", ");
+cat(back);cat("NonTarget_Omissions_");cat(let);cat(", ");
+cat(back);cat("Target_Omissions_");cat(let);cat(", ");
+cat(back);cat("OverallComissions_");cat(let);cat(", ");
+cat(back);cat("NonTarget_Comissions_");cat(let);cat(", ");
+cat(back);cat("Target_Comissions_");cat(let);cat(", ");
+cat(back);cat("Overall_RT_");cat(let);cat(", ");
+cat(back);cat("Overall_SDRT_");cat(let);cat(", ");
+cat(back);cat("Overall_CVRT_");cat(let);cat(", ");
+cat(back);cat("NonTarget_RT_");cat(let);cat(", ");
+cat(back);cat("NonTarget_SDRT_");cat(let);cat(", ");
+cat(back);cat("NonTarget_CVRT_");cat(let);cat(", ");
+cat(back);cat("Target_RT_");cat(let);cat(", ");
+cat(back);cat("Target_SDRT_");cat(let);cat(", ");
+cat(back);cat("Target_CVRT_");cat(let);cat(", ");
+
+cat(back);cat("Num_1back_lures");cat(let);cat(", ");
+cat(back);cat("Num_cor_1back_lures");cat(let);cat(", ");
+cat(back);cat("RT_1back_lures");cat(let);cat(", ");
+cat(back);cat("Num_2back_lures");cat(let);cat(", ");
+cat(back);cat("Num_cor_2back_lures");cat(let);cat(", ");
+cat(back);cat("RT_2back_lures");cat(let);cat(", ");
+cat(back);cat("Num_3back_lures");cat(let);cat(", ");
+cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
+cat(back);cat("RT_3back_lures");cat(let);cat(", ");
+
+#comment for how to change blocks
+if(length(unique(B1_data$BlockID)) == 3){
+
+  letters <- list('A', 'B', 'C')
+}
+
+if(length(unique(B1_data$BlockID)) == 4){
+  
+  letters <- list('A', 'B', 'C', 'D')
+}
+
+for (let in letters) {
+
+  cat(back);cat("Overall_Acc_");cat(let);cat(", ");
+  cat(back);cat("Overall_SDAcc_");cat(let);cat(", ");
+  cat(back);cat("Overall_CVAcc_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_Acc_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_SDAcc_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_CVAcc_");cat(let);cat(", ");
+  cat(back);cat("Target_Acc_");cat(let);cat(", ");
+  cat(back);cat("Target_SDAcc_");cat(let);cat(", ");
+  cat(back);cat("Target_CVAcc_");cat(let);cat(", ");
+  cat(back);cat("_dprime_");cat(let);cat(", ");
+  cat(back);cat("OverallOmissions_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_Omissions_");cat(let);cat(", ");
+  cat(back);cat("Target_Omissions_");cat(let);cat(", ");
+  cat(back);cat("OverallComissions_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_Comissions_");cat(let);cat(", ");
+  cat(back);cat("Target_Comissions_");cat(let);cat(", ");
+  cat(back);cat("Overall_RT_");cat(let);cat(", ");
+  cat(back);cat("Overall_SDRT_");cat(let);cat(", ");
+  cat(back);cat("Overall_CVRT_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_RT_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_SDRT_");cat(let);cat(", ");
+  cat(back);cat("NonTarget_CVRT_");cat(let);cat(", ");
+  cat(back);cat("Target_RT_");cat(let);cat(", ");
+  cat(back);cat("Target_SDRT_");cat(let);cat(", ");
+  cat(back);cat("Target_CVRT_");cat(let);cat(", ");
+  
+  cat(back);cat("Num_1back_lures");cat(let);cat(", ");
+  cat(back);cat("Num_cor_1back_lures");cat(let);cat(", ");
+  cat(back);cat("RT_1back_lures");cat(let);cat(", ");
+  cat(back);cat("Num_2back_lures");cat(let);cat(", ");
+  cat(back);cat("Num_cor_2back_lures");cat(let);cat(", ");
+  cat(back);cat("RT_2back_lures");cat(let);cat(", ");
+  cat(back);cat("Num_3back_lures");cat(let);cat(", ");
+  cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
+  cat(back);cat("RT_3back_lures");cat(let);
+  
+  cat(", ");
+}
+}
+cat("\n");
+
+
+cat(the_part_id); cat(", ");
+cat("n-Back"); cat(", ");
+cat(data$Session[1]); cat(", ");
+
+for (ourData in data_list){
+  ####______________________Overall__________________________________________####
+  #cat("All");cat(", ");
+if(nrow(ourData)!= 0){  
+  Overall_Acc <- mean(ourData$Stimulus.ACC) * 100
+  cat(Overall_Acc); cat("%, ");
+  
+  
+  Overall_SDAcc <- sd(ourData$Stimulus.ACC)
+  cat(Overall_SDAcc); cat(", ");
+  
+  
+  Overall_CVAcc <- (Overall_SDAcc / Overall_Acc)
+  cat(Overall_CVAcc); cat(", ");
+  
+  
+  #NonTarget
+  
+  NonTargetAcc <- ourData$Stimulus.ACC[ourData$TrialType == "NonTarget"]
+  
+  
+  NonTarget_Acc <- mean(NonTargetAcc) * 100
+  cat(NonTarget_Acc); cat("%"); cat(", ");
+  
+  
+  NonTarget_SDAcc <- sd(NonTargetAcc)
+  cat(NonTarget_SDAcc); cat(", ");
+  
+  
+  NonTarget_CVAcc <- (NonTarget_SDAcc / NonTarget_Acc)
+  cat(NonTarget_CVAcc); cat(", ");
+  
+  
+  #Target
+  
+  TargetAcc <- ourData$Stimulus.ACC[ourData$TrialType == "Target"]
+  
+  Target_Acc <- mean(TargetAcc) * 100
+  cat(Target_Acc); cat("%"); cat(", ");
+  
+  
+  Target_SDAcc <- sd(TargetAcc)
+  cat(Target_SDAcc); cat(", ");
+  
+  
+  Target_CVAcc <- (Target_SDAcc / Target_Acc)
+  cat(Target_CVAcc); cat(", ");
+  
+  
+  #D-Prime
+  NonTarget_trials <- data$Stimulus.ACC[data$TrialType == "NonTarget"]
+  NonTarget_Comissions <- (sum(data$TrialType == "NonTarget" & data$Stimulus.ACC == 0 & data$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+  
+  hit_rate <- Target_Acc/100
+  false_alarms <- NonTarget_Comissions/100
+  if(hit_rate == 1) {
+    hit_rate <- hit_rate - 0.0000000001
+  }
+  if(hit_rate == 0) {
+    hit_rate <- hit_rate + 0.0000000001
+  }
+  if(false_alarms == 1) {
+    false_alarms <- false_alarms - 0.0000000001
+  }
+  if(false_alarms == 0) {
+    false_alarms <- false_alarms + 0.0000000001
+  }
+  z_hit <- qnorm(hit_rate)
+  z_fa <- qnorm(false_alarms)
+  
+  d_prime <- z_hit - z_fa
+  cat(d_prime); cat(", ");
+  
+  TargetCorrect_RT <- data$Stimulus.RT[data$Stimulus.ACC == 1 & data$TrialType == "Target"]
+  
+  Target_RT <- mean(TargetCorrect_RT)
+  Target_IE <- Target_RT/Target_Acc
+  cat(Target_IE); cat(", ");
+  
+  
+  #Omissions
+  
+  OverallOmissions <- (sum(ourData$Stimulus.RT == 0) / nrow(ourData)) * 100
+  cat(OverallOmissions); cat("%"); cat(", ");
+  
+  
+  NonTarget_trials <- data$Stimulus.ACC[ourData$TrialType == "NonTarget"]
+  
+  NonTarget_Omissions <- (sum(ourData$TrialType == "NonTarget" & ourData$Stimulus.RT == 0)/length(NonTarget_trials))  * 100
+  cat(NonTarget_Omissions); cat("%"); cat(", ");
+  
+  
+  Target_trials <- ourData$Stimulus.ACC[ourData$TrialType == "Target"]
+  
+  Target_Omissions <- (sum(ourData$TrialType == "Target" & ourData$Stimulus.RT == 0)/length(Target_trials))  * 100
+  cat(Target_Omissions); cat("%"); cat(", ");
+  
+  
+  #Comissions
+  
+  TotalComissions <- c(ourData$NonTargetComissionErrors, ourData$HitsComissionErrors)
+  
+  
+  OverallComissions <- (sum(ourData$Stimulus.ACC == 0 & ourData$Stimulus.RT > 0)/ nrow(ourData)) * 100
+  cat(OverallComissions); cat("%"); cat(", ");
+  
+  NonTarget_Comissions <- (sum(ourData$TrialType == "NonTarget" & ourData$Stimulus.ACC == 0 & ourData$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+  cat(NonTarget_Comissions); cat("%"); cat(", ");
+  
+  
+  Target_comissions <- (sum(ourData$TrialType == "Target" & ourData$Stimulus.ACC == 0 & ourData$Stimulus.RT > 0)/length(Target_trials)) * 100
+  cat(Target_comissions); cat("%"); cat(", ");
+  
+  
+  #Overall_RT 
+  
+  OverallCorrect_RT <- ourData$Stimulus.RT[ourData$Stimulus.ACC == 1]
+  
+  Overall_RT <- mean(OverallCorrect_RT)
+  cat(Overall_RT); cat(", ");
+  
+  Overall_SDRT <- sd(OverallCorrect_RT)
+  cat(Overall_SDRT); cat(", ");
+  
+  Overall_CVRT <- (Overall_SDRT / Overall_RT)
+  cat(Overall_CVRT); cat(", ");
+  
+  #NonTarget_RT
+  
+  NonTargetCorrect_RT <- ourData$Stimulus.RT[ourData$Stimulus.ACC == 1 & ourData$TrialType == "NonTarget"]
+  
+  
+  NonTarget_RT <- mean(NonTargetCorrect_RT)
+  cat(NonTarget_RT); cat(", ");
+  
+  NonTarget_SDRT <- sd(NonTargetCorrect_RT)
+  cat(NonTarget_SDRT); cat(", ");
+  
+  NonTarget_CVRT <- (NonTarget_SDRT / NonTarget_RT)
+  cat(NonTarget_CVRT); cat(", ");
+  
+  #Target_RT
+  
+  TargetCorrect_RT <- ourData$Stimulus.RT[ourData$Stimulus.ACC == 1 & ourData$TrialType == "Target"]
+  
+  Target_RT <- mean(TargetCorrect_RT)
+  cat(Target_RT); cat(", ");
+  
+  Target_SDRT <- sd(TargetCorrect_RT)
+  cat(Target_SDRT); cat(", ");
+  
+  Target_CVRT <- (Target_SDRT / Target_RT)
+  cat(Target_CVRT); cat(", ");
+} else {
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+  cat("NA");cat(", ");
+} 
+  
+  
+  
+
+  
+  one_back_lures <- -1
+  cor_one_back_lures <- 0
+  two_back_lures <- -1
+  cor_two_back_lures <- 0
+  three_back_lures <- -1
+  cor_three_back_lures <- 0
+  
+  i = 2
+  for(i in 2: length(ourData$Letter)) {
+
+    if(toupper(as.character(ourData$Letter[i])) == toupper(as.character(ourData$Letter[i-1]))) {
+      one_back_lures <- c(one_back_lures, ourData$Stimulus.RT[i])
+      if(ourData$Stimulus.ACC[i] == 1) {
+        cor_one_back_lures = cor_one_back_lures + 1
+      }
+    }
+    
+    if(i > 3) {
+      if(toupper(as.character(ourData$Letter[i])) == toupper(as.character(ourData$Letter[i-2]))) {
+        two_back_lures <- c(two_back_lures, ourData$Stimulus.RT[i])
+        if(ourData$Stimulus.ACC[i] == 1) {
+          cor_two_back_lures = cor_two_back_lures + 1
+        }
+      }
+    }
+    
+    if(i > 4) {
+      if(toupper(as.character(ourData$Letter[i])) == toupper(as.character(ourData$Letter[i-3]))) {
+        three_back_lures <- c(three_back_lures, ourData$Stimulus.RT[i])
+        if(ourData$Stimulus.ACC[i] == 1) {
+          cor_three_back_lures = cor_three_back_lures + 1
+        }
+      }
+    }
+
+  }
+  
+  
+  
+  one_back_lures <- one_back_lures[-1]
+  one_back_lures <- one_back_lures[-2]
+  one_back_lures <- one_back_lures[-3]
+  
+  if(ourData$Condition[1] == 1) {
+    cat("NA");cat(", ");
+    cat("NA");cat(", ");
+    cat("NA");cat(", ");
+  } else {
+    cat(length(one_back_lures));cat(", ");
+    cat(cor_one_back_lures);cat(", ");
+    cat(mean(one_back_lures));cat(", ");
+  }
+  
+  if(ourData$Condition[1] == 2) {
+    cat("NA");cat(", ");
+    cat("NA");cat(", ");
+    cat("NA");cat(", ");
+  } else {
+    cat(length(two_back_lures));cat(", ");
+    cat(cor_two_back_lures);cat(", ");
+    cat(mean(two_back_lures));cat(", ");
+  }
+  
+  if(ourData$Condition[1] == 3) {
+    cat("NA");cat(", ");
+    cat("NA");cat(", ");
+    cat("NA");cat(", ");
+  } else {
+    cat(length(three_back_lures));cat(", ");
+    cat(cor_three_back_lures);cat(", ");
+    cat(mean(three_back_lures));cat(", ");
+  }
+  
+  
+  ####______________________Blockwise__________________________________________####
+  
+  count <- 0;
+  blockList <- list('A', 'B', 'C', 'D', 'E','F')
+  
+  for (block in blockList) {
+    data_block <- ourData[ourData$BlockID == block,]
+    if ( nrow(data_block) != 0 ) {
+      
+      count <- count + 1;
+      
+      #cat(B1_data_block$Subject[1]); cat(", ");
+      #cat("1-Back"); cat(", ");
+      #cat(B1_data_block$Session[1]); cat(", ");
+      #cat(block); cat(", ");
+      
+      
+      Overall_Acc <- mean(data_block$Stimulus.ACC) * 100
+      cat(Overall_Acc); cat("%"); cat(", ");
+      
+      Overall_SDAcc <- sd(data_block$Stimulus.ACC)
+      cat(Overall_SDAcc); cat(", ");
+      
+      Overall_CVAcc <- (Overall_SDAcc / Overall_Acc)
+      cat(Overall_CVAcc); cat(", ");
+      
+      #NonTarget
+      
+      NonTargetAcc <- data_block$Stimulus.ACC[data_block$TrialType == "NonTarget"]
+      
+      
+      NonTarget_Acc <- mean(NonTargetAcc) * 100
+      cat(NonTarget_Acc); cat("%"); cat(", ");
+      
+      NonTarget_SDAcc <- sd(NonTargetAcc)
+      cat(NonTarget_SDAcc); cat(", ");
+      
+      NonTarget_CVAcc <- (NonTarget_SDAcc / NonTarget_Acc)
+      cat(NonTarget_CVAcc); cat(", ");
+      
+      #Target
+      
+      TargetAcc <- data_block$Stimulus.ACC[data_block$TrialType == "Target"]
+      
+      Target_Acc <- mean(TargetAcc) * 100
+      cat(Target_Acc); cat("%"); cat(", ");
+      
+      Target_SDAcc <- sd(TargetAcc)
+      cat(Target_SDAcc); cat(", ");
+      
+      Target_CVAcc <- (Target_SDAcc / Target_Acc)
+      cat(Target_CVAcc); cat(", ");
+      
+      #D-Prime
+      NonTarget_trials <- data_block$Stimulus.ACC[data_block$TrialType == "NonTarget"]
+      NonTarget_Comissions <- (sum(data_block$TrialType == "NonTarget" & data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+      
+      hit_rate <- Target_Acc/100
+      false_alarms <- NonTarget_Comissions/100
+      if(hit_rate == 1) {
+        hit_rate <- hit_rate - 0.0000000001
+      }
+      if(hit_rate == 0) {
+        hit_rate <- hit_rate + 0.0000000001
+      }
+      if(false_alarms == 1) {
+        false_alarms <- false_alarms - 0.0000000001
+      }
+      if(false_alarms == 0) {
+        false_alarms <- false_alarms + 0.0000000001
+      }
+      z_hit <- qnorm(hit_rate)
+      z_fa <- qnorm(false_alarms)
+      
+      d_prime <- z_hit - z_fa
+      cat(d_prime); cat(", ");
+      
+      #Omissions
+      
+      OverallOmissions <- (sum(data_block$Stimulus.RT == 0) / nrow(data_block)) * 100
+      cat(OverallOmissions); cat("%"); cat(", ");
+      
+      NonTarget_trials <- data_block$Stimulus.ACC[data_block$TrialType == "NonTarget"]
+      
+      NonTarget_Omissions <- (sum(data_block$TrialType == "NonTarget" & data_block$Stimulus.RT == 0)/length(NonTarget_trials))  * 100
+      cat(NonTarget_Omissions); cat("%"); cat(", ");
+      
+      Target_trials <- data_block$Stimulus.ACC[data_block$TrialType == "Target"]
+      
+      Target_Omissions <- (sum(data_block$TrialType == "Target" & data_block$Stimulus.RT == 0)/length(Target_trials))  * 100
+      cat(Target_Omissions); cat("%"); cat(", ");
+      
+      #Comissions
+      
+      TotalComissions <- c(data_block$NonTargetComissionErrors, data_block$HitsComissionErrors)
+      
+      
+      OverallComissions <- (sum(data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/ nrow(data_block)) * 100
+      cat(OverallComissions); cat("%"); cat(", ");
+      
+      NonTarget_Comissions <- (sum(data_block$TrialType == "NonTarget" & data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+      cat(NonTarget_Comissions); cat("%"); cat(", ");
+      
+      Target_comissions <- (sum(data_block$TrialType == "Target" & data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/length(Target_trials)) * 100
+      cat(Target_comissions); cat("%"); cat(", ");
+      
+      #Overall_RT 
+      
+      OverallCorrect_RT <- data_block$Stimulus.RT[data_block$Stimulus.ACC == 1]
+      
+      Overall_RT <- mean(OverallCorrect_RT)
+      cat(Overall_RT); cat(", ");
+      
+      Overall_SDRT <- sd(OverallCorrect_RT)
+      cat(Overall_SDRT); cat(", ");
+      
+      Overall_CVRT <- (Overall_SDRT / Overall_RT)
+      cat(Overall_CVRT); cat(", ");
+      
+      #NonTarget_RT
+      
+      NonTargetCorrect_RT <- data_block$Stimulus.RT[data_block$Stimulus.ACC == 1 & data_block$TrialType == "NonTarget"]
+      
+      
+      NonTarget_RT <- mean(NonTargetCorrect_RT)
+      cat(NonTarget_RT); cat(", ");
+      
+      NonTarget_SDRT <- sd(NonTargetCorrect_RT)
+      cat(NonTarget_SDRT); cat(", ");
+      
+      NonTarget_CVRT <- (NonTarget_SDRT / NonTarget_RT)
+      cat(NonTarget_CVRT); cat(", ");
+      
+      #Target_RT
+      
+      TargetCorrect_RT <- data_block$Stimulus.RT[data_block$Stimulus.ACC == 1 & data_block$TrialType == "Target"]
+      
+      Target_RT <- mean(TargetCorrect_RT)
+      cat(Target_RT); cat(", ");
+      
+      Target_SDRT <- sd(TargetCorrect_RT)
+      cat(Target_SDRT); cat(", ");
+      
+      Target_CVRT <- (Target_SDRT / Target_RT)
+      cat(Target_CVRT); cat(", ");
+      one_back_lures <- -1
+      cor_one_back_lures <- 0
+      two_back_lures <- -1
+      cor_two_back_lures <- 0
+      three_back_lures <- -1
+      cor_three_back_lures <- 0
+      
+      i = 2
+      for(i in 2: length(data_block$Letter)) {
+        
+        if(toupper(as.character(data_block$Letter[i])) == toupper(as.character(data_block$Letter[i-1]))) {
+          one_back_lures <- c(one_back_lures, data_block$Stimulus.RT[i])
+          if(data_block$Stimulus.ACC[i] == 1) {
+            cor_one_back_lures = cor_one_back_lures + 1
+          }
+        }
+        
+        if(i > 3) {
+          if(toupper(as.character(data_block$Letter[i])) == toupper(as.character(data_block$Letter[i-2]))) {
+            two_back_lures <- c(two_back_lures, data_block$Stimulus.RT[i])
+            if(data_block$Stimulus.ACC[i] == 1) {
+              cor_two_back_lures = cor_two_back_lures + 1
+            }
+          }
+        }
+        
+        if(i > 4) {
+          if(toupper(as.character(data_block$Letter[i])) == toupper(as.character(data_block$Letter[i-3]))) {
+            three_back_lures <- c(three_back_lures, data_block$Stimulus.RT[i])
+            if(data_block$Stimulus.ACC[i] == 1) {
+              cor_three_back_lures = cor_three_back_lures + 1
+            }
+          }
+        }
+        
+      }
+      
+      
+      
+      one_back_lures <- one_back_lures[-1]
+      one_back_lures <- one_back_lures[-2]
+      one_back_lures <- one_back_lures[-3]
+      
+      if(data_block$Condition[1] == 1) {
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+      } else {
+        cat(length(one_back_lures));cat(", ");
+        cat(cor_one_back_lures);cat(", ");
+        cat(mean(one_back_lures));cat(", ");
+      }
+      
+      if(data_block$Condition[1] == 2) {
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+      } else {
+        cat(length(two_back_lures));cat(", ");
+        cat(cor_two_back_lures);cat(", ");
+        cat(mean(two_back_lures));cat(", ");
+      }
+      
+      if(data_block$Condition[1] == 3) {
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+      } else {
+        cat(length(three_back_lures));cat(", ");
+        cat(cor_three_back_lures);cat(", ");
+        cat(mean(three_back_lures));cat(", ");
+      }
+     
+      
+    } else {
+      if(nrow(ourData) == 0){
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+      }
+    }
+    
+  }
+}
+
+cat("\n");
+
+
+
+sink()
+closeAllConnections()
+
+}
+
+
+
+
+
+
+
+
+
+#################################################################################################################
+
+
+
+
+              #For Group
+
+
+
+#################################################################################################################
+#sink("groupOutput.txt")
+sink("OUTPUT/groupOutput.txt")
+
+out_count = 0
+
+for(folder in folders){
+
+  the_part_id <- substr(basename(folder), 1, 5)
+  inside<-Sys.glob(paste(folder, "/*/*", sep = ""))
+  data <- read.csv(file = inside[1], header = TRUE,skip = 1)
+  if(ncol(data)  > 73) {
+    data<- data[,-13]
+  } 
+  #data <- read.csv(file = inside[1], header = TRUE,skip = 1)[,-13]
+  
+  
+  inside <- inside[2:length(inside)]
+  count = 2
+  for(stuff in inside) {
+    temp <- read.csv(file = stuff, header = TRUE,skip = 1)
+    if(ncol(temp)  > 73) {
+      data<- rbind(data,temp[,-13])
+    } else {
+      data<- rbind(data,temp)
+    }
+  } 
+
+  
+  ## Throw out only correct values with RTs < 100
+  
+  data <- data[(data$Stimulus.RT >= 100 & data$Stimulus.ACC == 1) | data$Stimulus.ACC == 0 | data$Stimulus.RT == 0,]
+  
+  
+  B1_data <- data[data$Condition == 1,]
+  B2_data <- data[data$Condition == 2,]
+  B3_data <- data[data$Condition == 3,]
+  if(nrow(B3_data) == 0){
+    data_list <- list(B1_data, B2_data)
+  } else {
+    data_list <- list(B1_data, B2_data, B3_data)
+  }
+
+  
+ if (out_count == 0){ 
+  
+  backs <- c("1_B_", "2_B_", "3_B_")
+
+   
+   cat("PartID, ");cat("ExperimentName , ");cat("SessionID, ");#cat("BlockID, ");
+   
+   for(back in backs) {
+     
+     let <- "All"
+     cat(back);cat("Overall_Acc_");cat(let);cat(", ");
+     cat(back);cat("Overall_SDAcc_");cat(let);cat(", ")
+     cat(back);cat("Overall_CVAcc_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_Acc_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_SDAcc_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_CVAcc_");cat(let);cat(", ");
+     cat(back);cat("Target_Acc_");cat(let);cat(", ");
+     cat(back);cat("Target_SDAcc_");cat(let);cat(", ");
+     cat(back);cat("Target_CVAcc_");cat(let);cat(", ");
+     cat(back);cat("_dprime_");cat(let);cat(", ");
+     cat(back);cat("_IE_");cat(let);cat(", ");
+     cat(back);cat("OverallOmissions_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_Omissions_");cat(let);cat(", ");
+     cat(back);cat("Target_Omissions_");cat(let);cat(", ");
+     cat(back);cat("OverallComissions_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_Comissions_");cat(let);cat(", ");
+     cat(back);cat("Target_Comissions_");cat(let);cat(", ");
+     cat(back);cat("Overall_RT_");cat(let);cat(", ");
+     cat(back);cat("Overall_SDRT_");cat(let);cat(", ");
+     cat(back);cat("Overall_CVRT_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_RT_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_SDRT_");cat(let);cat(", ");
+     cat(back);cat("NonTarget_CVRT_");cat(let);cat(", ");
+     cat(back);cat("Target_RT_");cat(let);cat(", ");
+     cat(back);cat("Target_SDRT_");cat(let);cat(", ");
+     cat(back);cat("Target_CVRT_");cat(let);cat(", ");
+     
+     cat(back);cat("Num_1back_lures");cat(let);cat(", ");
+     cat(back);cat("Num_cor_1back_lures");cat(let);cat(", ");
+     cat(back);cat("RT_1back_lures");cat(let);cat(", ");
+     cat(back);cat("Num_2back_lures");cat(let);cat(", ");
+     cat(back);cat("Num_cor_2back_lures");cat(let);cat(", ");
+     cat(back);cat("RT_2back_lures");cat(let);cat(", ");
+     cat(back);cat("Num_3back_lures");cat(let);cat(", ");
+     cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
+     cat(back);cat("RT_3back_lures");cat(let);cat(", ");
+     
+     if(length(unique(B1_data$BlockID)) == 3){
+       
+       letters <- list('A', 'B', 'C')
+     }
+     
+     if(length(unique(B1_data$BlockID)) == 4){
+       
+       letters <- list('A', 'B', 'C', 'D')
+     }
+     
+     for (let in letters) {
+       
+       cat(back);cat("Overall_Acc_");cat(let);cat(", ");
+       cat(back);cat("Overall_SDAcc_");cat(let);cat(", ");
+       cat(back);cat("Overall_CVAcc_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_Acc_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_SDAcc_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_CVAcc_");cat(let);cat(", ");
+       cat(back);cat("Target_Acc_");cat(let);cat(", ");
+       cat(back);cat("Target_SDAcc_");cat(let);cat(", ");
+       cat(back);cat("Target_CVAcc_");cat(let);cat(", ");
+       cat(back);cat("_dprime_");cat(let);cat(", ");
+       cat(back);cat("OverallOmissions_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_Omissions_");cat(let);cat(", ");
+       cat(back);cat("Target_Omissions_");cat(let);cat(", ");
+       cat(back);cat("OverallComissions_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_Comissions_");cat(let);cat(", ");
+       cat(back);cat("Target_Comissions_");cat(let);cat(", ");
+       cat(back);cat("Overall_RT_");cat(let);cat(", ");
+       cat(back);cat("Overall_SDRT_");cat(let);cat(", ");
+       cat(back);cat("Overall_CVRT_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_RT_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_SDRT_");cat(let);cat(", ");
+       cat(back);cat("NonTarget_CVRT_");cat(let);cat(", ");
+       cat(back);cat("Target_RT_");cat(let);cat(", ");
+       cat(back);cat("Target_SDRT_");cat(let);cat(", ");
+       cat(back);cat("Target_CVRT_");cat(let);cat(", ");
+       
+       cat(back);cat("Num_1back_lures");cat(let);cat(", ");
+       cat(back);cat("Num_cor_1back_lures");cat(let);cat(", ");
+       cat(back);cat("RT_1back_lures");cat(let);cat(", ");
+       cat(back);cat("Num_2back_lures");cat(let);cat(", ");
+       cat(back);cat("Num_cor_2back_lures");cat(let);cat(", ");
+       cat(back);cat("RT_2back_lures");cat(let);cat(", ");
+       cat(back);cat("Num_3back_lures");cat(let);cat(", ");
+       cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
+       cat(back);cat("RT_3back_lures");cat(let);
+       
+       cat(", ");
+     }
+   }
+   cat("\n");
+ 
+  out_count = 1 
+}
+  
+  cat(the_part_id); cat(", ");
+  cat("n-Back"); cat(", ");
+  cat(data$Session[1]); cat(", ");
+  
+  for (ourData in data_list){
+    ####______________________Overall__________________________________________####
+    #cat("All");cat(", ");
+    if(nrow(ourData) != 0) {
+    Overall_Acc <- mean(ourData$Stimulus.ACC) * 100
+    cat(Overall_Acc); cat("%, ");
+    
+    
+    Overall_SDAcc <- sd(ourData$Stimulus.ACC)
+    cat(Overall_SDAcc); cat(", ");
+    
+    
+    Overall_CVAcc <- (Overall_SDAcc / Overall_Acc)
+    cat(Overall_CVAcc); cat(", ");
+    
+    
+    #NonTarget
+    
+    NonTargetAcc <- ourData$Stimulus.ACC[ourData$TrialType == "NonTarget"]
+    
+    
+    NonTarget_Acc <- mean(NonTargetAcc) * 100
+    cat(NonTarget_Acc); cat("%"); cat(", ");
+    
+    
+    NonTarget_SDAcc <- sd(NonTargetAcc)
+    cat(NonTarget_SDAcc); cat(", ");
+    
+    
+    NonTarget_CVAcc <- (NonTarget_SDAcc / NonTarget_Acc)
+    cat(NonTarget_CVAcc); cat(", ");
+    
+    
+    #Target
+    
+    TargetAcc <- ourData$Stimulus.ACC[ourData$TrialType == "Target"]
+    
+    Target_Acc <- mean(TargetAcc) * 100
+    cat(Target_Acc); cat("%"); cat(", ");
+    
+    
+    Target_SDAcc <- sd(TargetAcc)
+    cat(Target_SDAcc); cat(", ");
+    
+    
+    Target_CVAcc <- (Target_SDAcc / Target_Acc)
+    cat(Target_CVAcc); cat(", ");
+    
+    #D-Prime
+    NonTarget_trials <- ourData$Stimulus.ACC[ourData$TrialType == "NonTarget"]
+    
+    NonTarget_Comissions <- (sum(ourData$TrialType == "NonTarget" & ourData$Stimulus.ACC == 0 & ourData$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+    
+    hit_rate <- Target_Acc/100
+    false_alarms <- NonTarget_Comissions/100
+    if(hit_rate == 1) {
+      hit_rate <- hit_rate - 0.0000000001
+    }
+    if(hit_rate == 0) {
+      hit_rate <- hit_rate + 0.0000000001
+    }
+    if(false_alarms == 1) {
+      false_alarms <- false_alarms - 0.0000000001
+    }
+    if(false_alarms == 0) {
+      false_alarms <- false_alarms + 0.0000000001
+    }
+    z_hit <- qnorm(hit_rate)
+    z_fa <- qnorm(false_alarms)
+    
+    d_prime <- z_hit - z_fa
+    cat(d_prime); cat(", ");
+    
+    TargetCorrect_RT <- ourData$Stimulus.RT[ourData$Stimulus.ACC == 1 & ourData$TrialType == "Target"]
+    
+    Target_RT <- mean(TargetCorrect_RT)
+    Target_IE <- Target_RT/Target_Acc
+    cat(Target_IE); cat(", ");
+    
+    #Omissions
+    
+    OverallOmissions <- (sum(ourData$Stimulus.RT == 0) / nrow(ourData)) * 100
+    cat(OverallOmissions); cat("%"); cat(", ");
+    
+    
+    NonTarget_trials <- ourData$Stimulus.ACC[ourData$TrialType == "NonTarget"]
+    
+    NonTarget_Omissions <- (sum(ourData$TrialType == "NonTarget" & ourData$Stimulus.RT == 0)/length(NonTarget_trials))  * 100
+    cat(NonTarget_Omissions); cat("%"); cat(", ");
+    
+    
+    Target_trials <- ourData$Stimulus.ACC[ourData$TrialType == "Target"]
+    
+    Target_Omissions <- (sum(ourData$TrialType == "Target" & ourData$Stimulus.RT == 0)/length(Target_trials))  * 100
+    cat(Target_Omissions); cat("%"); cat(", ");
+    
+    
+    #Comissions
+    
+    TotalComissions <- c(ourData$NonTargetComissionErrors, ourData$HitsComissionErrors)
+    
+    
+    OverallComissions <- (sum(ourData$Stimulus.ACC == 0 & ourData$Stimulus.RT > 0)/ nrow(ourData)) * 100
+    cat(OverallComissions); cat("%"); cat(", ");
+    
+    NonTarget_Comissions <- (sum(ourData$TrialType == "NonTarget" & ourData$Stimulus.ACC == 0 & ourData$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+    cat(NonTarget_Comissions); cat("%"); cat(", ");
+    
+    
+    Target_comissions <- (sum(ourData$TrialType == "Target" & ourData$Stimulus.ACC == 0 & ourData$Stimulus.RT > 0)/length(Target_trials)) * 100
+    cat(Target_comissions); cat("%"); cat(", ");
+    
+    
+    #Overall_RT 
+    
+    OverallCorrect_RT <- ourData$Stimulus.RT[ourData$Stimulus.ACC == 1]
+    
+    Overall_RT <- mean(OverallCorrect_RT)
+    cat(Overall_RT); cat(", ");
+    
+    Overall_SDRT <- sd(OverallCorrect_RT)
+    cat(Overall_SDRT); cat(", ");
+    
+    Overall_CVRT <- (Overall_SDRT / Overall_RT)
+    cat(Overall_CVRT); cat(", ");
+    
+    #NonTarget_RT
+    
+    NonTargetCorrect_RT <- ourData$Stimulus.RT[ourData$Stimulus.ACC == 1 & ourData$TrialType == "NonTarget"]
+    
+    
+    NonTarget_RT <- mean(NonTargetCorrect_RT)
+    cat(NonTarget_RT); cat(", ");
+    
+    NonTarget_SDRT <- sd(NonTargetCorrect_RT)
+    cat(NonTarget_SDRT); cat(", ");
+    
+    NonTarget_CVRT <- (NonTarget_SDRT / NonTarget_RT)
+    cat(NonTarget_CVRT); cat(", ");
+    
+    #Target_RT
+    
+    TargetCorrect_RT <- ourData$Stimulus.RT[ourData$Stimulus.ACC == 1 & ourData$TrialType == "Target"]
+    
+    Target_RT <- mean(TargetCorrect_RT)
+    cat(Target_RT); cat(", ");
+    
+    Target_SDRT <- sd(TargetCorrect_RT)
+    cat(Target_SDRT); cat(", ");
+    
+    Target_CVRT <- (Target_SDRT / Target_RT)
+    cat(Target_CVRT); cat(", ");
+    } else {
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+    }
+    
+    
+    one_back_lures <- -1
+    cor_one_back_lures <- 0
+    two_back_lures <- -1
+    cor_two_back_lures <- 0
+    three_back_lures <- -1
+    cor_three_back_lures <- 0
+    
+    i = 2
+    for(i in 2: length(ourData$Letter)) {
+      
+      if(toupper(as.character(ourData$Letter[i])) == toupper(as.character(ourData$Letter[i-1]))) {
+        one_back_lures <- c(one_back_lures, ourData$Stimulus.RT[i])
+        if(ourData$Stimulus.ACC[i] == 1) {
+          cor_one_back_lures = cor_one_back_lures + 1
+        }
+      }
+      
+      if(i > 3) {
+        if(toupper(as.character(ourData$Letter[i])) == toupper(as.character(ourData$Letter[i-2]))) {
+          two_back_lures <- c(two_back_lures, ourData$Stimulus.RT[i])
+          if(ourData$Stimulus.ACC[i] == 1) {
+            cor_two_back_lures = cor_two_back_lures + 1
+          }
+        }
+      }
+      
+      if(i > 4) {
+        if(toupper(as.character(ourData$Letter[i])) == toupper(as.character(ourData$Letter[i-3]))) {
+          three_back_lures <- c(three_back_lures, ourData$Stimulus.RT[i])
+          if(ourData$Stimulus.ACC[i] == 1) {
+            cor_three_back_lures = cor_three_back_lures + 1
+          }
+        }
+      }
+      
+    }
+    
+    
+    
+    one_back_lures <- one_back_lures[-1]
+    one_back_lures <- one_back_lures[-2]
+    one_back_lures <- one_back_lures[-3]
+    
+    if(ourData$Condition[1] == 1) {
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+    } else {
+      cat(length(one_back_lures));cat(", ");
+      cat(cor_one_back_lures);cat(", ");
+      cat(mean(one_back_lures));cat(", ");
+    }
+    
+    if(ourData$Condition[1] == 2) {
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+    } else {
+      cat(length(two_back_lures));cat(", ");
+      cat(cor_two_back_lures);cat(", ");
+      cat(mean(two_back_lures));cat(", ");
+    }
+    
+    if(ourData$Condition[1] == 3) {
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+      cat("NA");cat(", ");
+    } else {
+      cat(length(three_back_lures));cat(", ");
+      cat(cor_three_back_lures);cat(", ");
+      cat(mean(three_back_lures));cat(", ");
+    }
+    
+    ####______________________Blockwise__________________________________________####
+    
+    count <- 0;
+    blockList <- list('A', 'B', 'C', 'D', 'E','F')
+    
+    for (block in blockList) {
+      data_block <- ourData[ourData$BlockID == block,]
+      if ( nrow(data_block) != 0 ) {
+        
+        count <- count + 1;
+        
+        #cat(B1_data_block$Subject[1]); cat(", ");
+        #cat("1-Back"); cat(", ");
+        #cat(B1_data_block$Session[1]); cat(", ");
+        #cat(block); cat(", ");
+        
+        
+        Overall_Acc <- mean(data_block$Stimulus.ACC) * 100
+        cat(Overall_Acc); cat("%"); cat(", ");
+        
+        Overall_SDAcc <- sd(data_block$Stimulus.ACC)
+        cat(Overall_SDAcc); cat(", ");
+        
+        Overall_CVAcc <- (Overall_SDAcc / Overall_Acc)
+        cat(Overall_CVAcc); cat(", ");
+        
+        #NonTarget
+        
+        NonTargetAcc <- data_block$Stimulus.ACC[data_block$TrialType == "NonTarget"]
+        
+        
+        NonTarget_Acc <- mean(NonTargetAcc) * 100
+        cat(NonTarget_Acc); cat("%"); cat(", ");
+        
+        NonTarget_SDAcc <- sd(NonTargetAcc)
+        cat(NonTarget_SDAcc); cat(", ");
+        
+        NonTarget_CVAcc <- (NonTarget_SDAcc / NonTarget_Acc)
+        cat(NonTarget_CVAcc); cat(", ");
+        
+        #Target
+        
+        TargetAcc <- data_block$Stimulus.ACC[data_block$TrialType == "Target"]
+        
+        Target_Acc <- mean(TargetAcc) * 100
+        cat(Target_Acc); cat("%"); cat(", ");
+        
+        Target_SDAcc <- sd(TargetAcc)
+        cat(Target_SDAcc); cat(", ");
+        
+        Target_CVAcc <- (Target_SDAcc / Target_Acc)
+        cat(Target_CVAcc); cat(", ");
+        
+        #D-Prime
+        NonTarget_trials <- ourData$Stimulus.ACC[ourData$TrialType == "NonTarget"]
+        NonTarget_Comissions <- (sum(data_block$TrialType == "NonTarget" & data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+        
+        hit_rate <- Target_Acc/100
+        false_alarms <- NonTarget_Comissions/100
+        if(hit_rate == 1) {
+          hit_rate <- hit_rate - 0.0000000001
+        }
+        if(hit_rate == 0) {
+          hit_rate <- hit_rate + 0.0000000001
+        }
+        if(false_alarms == 1) {
+          false_alarms <- false_alarms - 0.0000000001
+        }
+        if(false_alarms == 0) {
+          false_alarms <- false_alarms + 0.0000000001
+        }
+        z_hit <- qnorm(hit_rate)
+        z_fa <- qnorm(false_alarms)
+        
+        d_prime <- z_hit - z_fa
+        cat(d_prime); cat(", ");
+        
+        #Omissions
+        
+        OverallOmissions <- (sum(data_block$Stimulus.RT == 0) / nrow(data_block)) * 100
+        cat(OverallOmissions); cat("%"); cat(", ");
+        
+        NonTarget_trials <- data_block$Stimulus.ACC[data_block$TrialType == "NonTarget"]
+        
+        NonTarget_Omissions <- (sum(data_block$TrialType == "NonTarget" & data_block$Stimulus.RT == 0)/length(NonTarget_trials))  * 100
+        cat(NonTarget_Omissions); cat("%"); cat(", ");
+        
+        Target_trials <- data_block$Stimulus.ACC[data_block$TrialType == "Target"]
+        
+        Target_Omissions <- (sum(data_block$TrialType == "Target" & data_block$Stimulus.RT == 0)/length(Target_trials))  * 100
+        cat(Target_Omissions); cat("%"); cat(", ");
+        
+        #Comissions
+        
+        TotalComissions <- c(data_block$NonTargetComissionErrors, data_block$HitsComissionErrors)
+        
+        
+        OverallComissions <- (sum(data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/ nrow(data_block)) * 100
+        cat(OverallComissions); cat("%"); cat(", ");
+        
+        NonTarget_Comissions <- (sum(data_block$TrialType == "NonTarget" & data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/length(NonTarget_trials)) * 100
+        cat(NonTarget_Comissions); cat("%"); cat(", ");
+        
+        Target_comissions <- (sum(data_block$TrialType == "Target" & data_block$Stimulus.ACC == 0 & data_block$Stimulus.RT > 0)/length(Target_trials)) * 100
+        cat(Target_comissions); cat("%"); cat(", ");
+        
+        #Overall_RT 
+        
+        OverallCorrect_RT <- data_block$Stimulus.RT[data_block$Stimulus.ACC == 1]
+        
+        Overall_RT <- mean(OverallCorrect_RT)
+        cat(Overall_RT); cat(", ");
+        
+        Overall_SDRT <- sd(OverallCorrect_RT)
+        cat(Overall_SDRT); cat(", ");
+        
+        Overall_CVRT <- (Overall_SDRT / Overall_RT)
+        cat(Overall_CVRT); cat(", ");
+        
+        #NonTarget_RT
+        
+        NonTargetCorrect_RT <- data_block$Stimulus.RT[data_block$Stimulus.ACC == 1 & data_block$TrialType == "NonTarget"]
+        
+        
+        NonTarget_RT <- mean(NonTargetCorrect_RT)
+        cat(NonTarget_RT); cat(", ");
+        
+        NonTarget_SDRT <- sd(NonTargetCorrect_RT)
+        cat(NonTarget_SDRT); cat(", ");
+        
+        NonTarget_CVRT <- (NonTarget_SDRT / NonTarget_RT)
+        cat(NonTarget_CVRT); cat(", ");
+        
+        #Target_RT
+        
+        TargetCorrect_RT <- data_block$Stimulus.RT[data_block$Stimulus.ACC == 1 & data_block$TrialType == "Target"]
+        
+        Target_RT <- mean(TargetCorrect_RT)
+        cat(Target_RT); cat(", ");
+        
+        Target_SDRT <- sd(TargetCorrect_RT)
+        cat(Target_SDRT); cat(", ");
+        
+        Target_CVRT <- (Target_SDRT / Target_RT)
+        cat(Target_CVRT); cat(", ");
+        
+        
+        one_back_lures <- -1
+        cor_one_back_lures <- 0
+        two_back_lures <- -1
+        cor_two_back_lures <- 0
+        three_back_lures <- -1
+        cor_three_back_lures <- 0
+        
+        i = 2
+        for(i in 2: length(data_block$Letter)) {
+
+          
+          if(toupper(as.character(data_block$Letter[i])) == toupper(as.character(data_block$Letter[i-1]))) {
+            one_back_lures <- c(one_back_lures, data_block$Stimulus.RT[i])
+            if(data_block$Stimulus.ACC[i] == 1) {
+              cor_one_back_lures = cor_one_back_lures + 1
+            }
+          }
+          
+          if(i > 3) {
+            if(toupper(as.character(data_block$Letter[i])) == toupper(as.character(data_block$Letter[i-2]))) {
+              two_back_lures <- c(two_back_lures, data_block$Stimulus.RT[i])
+              if(data_block$Stimulus.ACC[i] == 1) {
+                cor_two_back_lures = cor_two_back_lures + 1
+              }
+            }
+          }
+          
+          if(i > 4) {
+            if(toupper(as.character(data_block$Letter[i])) == toupper(as.character(data_block$Letter[i-3]))) {
+              three_back_lures <- c(three_back_lures, data_block$Stimulus.RT[i])
+              if(data_block$Stimulus.ACC[i] == 1) {
+                cor_three_back_lures = cor_three_back_lures + 1
+              }
+            }
+          }
+          
+        }
+        
+        
+        
+        one_back_lures <- one_back_lures[-1]
+        one_back_lures <- one_back_lures[-2]
+        one_back_lures <- one_back_lures[-3]
+        
+        if(data_block$Condition[1] == 1) {
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+        } else {
+          cat(length(one_back_lures));cat(", ");
+          cat(cor_one_back_lures);cat(", ");
+          cat(mean(one_back_lures));cat(", ");
+        }
+        
+        if(data_block$Condition[1] == 2) {
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+        } else {
+          cat(length(two_back_lures));cat(", ");
+          cat(cor_two_back_lures);cat(", ");
+          cat(mean(two_back_lures));cat(", ");
+        }
+        
+        if(data_block$Condition[1] == 3) {
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+        } else {
+          cat(length(three_back_lures));cat(", ");
+          cat(cor_three_back_lures);cat(", ");
+          cat(mean(three_back_lures));cat(", ");
+        }
+        
+        
+      } else {
+        if(nrow(ourData) == 0){
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+        cat("NA");cat(", ");
+          
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          cat("NA");cat(", ");
+          
+          
+        }
+      }
+      
+    }
+  }
+  
+  cat("\n");
+  
+  
+}
+
+sink()
+closeAllConnections()
+
+
+
+
