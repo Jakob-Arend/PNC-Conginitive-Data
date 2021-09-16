@@ -1,5 +1,5 @@
-setwd("C:/Users/User/Desktop/PNC_Lab/Data_Reduction/EXP1/COG/PRE/NB")
-folders <- Sys.glob("C:/Users/User/Desktop/PNC_Lab/Data_Reduction/EXP1/COG/PRE/NB/INPUT/*")
+setwd("C:/Users/User/Desktop/PNC_Lab/PNC-Conginitive-Data/EXP2/COG/PRE/NB")
+folders <- Sys.glob("C:/Users/User/Desktop/PNC_Lab/PNC-Conginitive-Data/EXP2/COG/PRE/NB/INPUT/*")
 # this reads in files for a participant (that is what data is, so put that in the beginning of the loop)
 
 fileNames <- Sys.glob("input*.csv")
