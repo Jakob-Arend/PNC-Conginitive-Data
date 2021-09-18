@@ -124,6 +124,11 @@ cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
 cat(back);cat("RT_3back_lures");cat(let);cat(", ");
 
 #comment for how to change blocks
+if(length(unique(B1_data$BlockID)) == 2){
+  
+  letters <- list('A', 'B')
+}
+
 if(length(unique(B1_data$BlockID)) == 3){
 
   letters <- list('A', 'B', 'C')
@@ -827,6 +832,11 @@ for(folder in folders){
      cat(back);cat("Num_3back_lures");cat(let);cat(", ");
      cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
      cat(back);cat("RT_3back_lures");cat(let);cat(", ");
+     
+     if(length(unique(B1_data$BlockID)) == 2){
+       
+       letters <- list('A', 'B')
+     }
      
      if(length(unique(B1_data$BlockID)) == 3){
        

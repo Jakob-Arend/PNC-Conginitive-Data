@@ -1,5 +1,5 @@
-setwd("C:/Users/User/Desktop/PNC_Lab/Data_Reduction/EXP1/COG/DURING")
-folders <- Sys.glob("C:/Users/User/Desktop/PNC_Lab/Data_Reduction/EXP1/COG/DURING/INPUT/*")
+setwd("C:/Users/User/Desktop/PNC_Lab/PNC-Conginitive-Data/EXP1/COG/DURING")
+folders <- Sys.glob("C:/Users/User/Desktop/PNC_Lab/PNC-Conginitive-Data/EXP1/COG/DURING/INPUT/*")
 # this reads in files for a participant (that is what data is, so put that in the beginning of the loop)
 
 fileNames <- Sys.glob("input*.csv")
@@ -124,6 +124,11 @@ cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
 cat(back);cat("RT_3back_lures");cat(let);cat(", ");
 
 #comment for how to change blocks
+if(length(unique(B1_data$BlockID)) == 2){
+  
+  letters <- list('A', 'B')
+}
+
 if(length(unique(B1_data$BlockID)) == 3){
 
   letters <- list('A', 'B', 'C')
@@ -827,6 +832,10 @@ for(folder in folders){
      cat(back);cat("Num_3back_lures");cat(let);cat(", ");
      cat(back);cat("Num_cor_3back_lures");cat(let);cat(", ");
      cat(back);cat("RT_3back_lures");cat(let);cat(", ");
+     if(length(unique(B1_data$BlockID)) == 2){
+       
+       letters <- list('A', 'B')
+     }
      
      if(length(unique(B1_data$BlockID)) == 3){
        
