@@ -560,8 +560,8 @@ for(fileName2 in fileNames){
     cat("FC_Overall_SDAcc");cat(", ");
     cat("FC_Overall_CVAcc");cat(", ");
     cat("FC_Overall_IE");cat(", ");
-    cat("FC_Overall_Omisions");cat(", ");
     cat("FC_Overall_Comissions");cat(", ");
+    cat("FC_Overall_Omisions");cat(", ");
     cat("FC_Cong_Acc");cat(", ");
     cat("FC_Cong_SDAcc");cat(", ");
     cat("FC_Cong_CVAcc");cat(", ");
